@@ -1,0 +1,21 @@
+---
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup}
+
+dataset = read.csv("C:/Users/v-suswat/Downloads/unversitylist23.csv")
+dataset
+mean(dataset$Industry_code_NZSIOC)
+sd(dataset$Industry_code_NZSIOC)
+table(dataset$Variable_name)
+dataset$Industry_code_NZSIOC= mean(dataset$Industry_code_NZSIOC)- sd(dataset$Industry_code_NZSIOC)
+dataset$Industry_code_NZSIOC
+hist(dataset$Value)
+x = dataset$Industry_code_NZSIOC
+y = dataset$Value
+plot(x,y, main = "Area and Length", xlab = "Area", ylab = "Length")
+
