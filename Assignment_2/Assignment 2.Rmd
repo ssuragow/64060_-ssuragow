@@ -1,0 +1,127 @@
+---
+title: "Assignment2"
+author: "Swathi Suragowni Ravindranath"
+date: '2022-03-06'
+output: pdf_document
+---
+
+```{r setup, }
+
+library('caret')
+library('ISLR')
+library('dplyr')
+library('class')
+
+# Ignoring exsisting variables and creating a new dataset
+
+UniversalBankData <- read.csv("C:/Users/ravin/Downloads/UniversalBank.csv", sep = ',' )
+
+UniversalBankData$ID <- NULL
+UniversalBankData$ZIP.Code <- NULL
+summary(UniversalBankData)
+
+
+UniversalBankData$Personal.Loan =  as.factor(UniversalBankData$Personal.Loan)
+
+
+Normalized_model <- preProcess(UniversalBankData[, -8],method = c("center", "scale"))
+Bank_normalized <- predict(Normalized_model,UniversalBankData)
+summary(Bank_normalized)
+
+#partitioning into 60% for training dataset and 40% for testing dataset
+
+
+Train_index <- createDataPartition(UniversalBankData$Personal.Loan, p = 0.6, list = FALSE)
+train.df = Bank_normalized[Train_index,]
+validation.df = Bank_normalized[-Train_index,]
+
+#Prediction 
+To_Predict = data.frame(Age = 40, Experience = 10, Income = 84, Family = 2,
+                        CCAvg = 2, Education = 1, Mortgage = 0, Securities.Account =
+                          0, CD.Account = 0, Online = 1, CreditCard = 1)
+print(To_Predict)
+To_Predict_Normalized <- predict(Normalized_model,To_Predict)
+
+Prediction <- knn(train= train.df[,1:7,9:12],
+                  test = To_Predict_Normalized[,1:7,9:12],
+                  cl= train.df$Personal.Loan,
+                  k=1)
+print(Prediction)
+
+
+
+#Question 2
+
+
+set.seed(123)
+Bankcontrol <- trainControl(method= "repeatedcv", number = 3, repeats = 2)
+searchGrid = expand.grid(k=1:10)
+
+knn.model = train(Personal.Loan~., data = train.df, method = 'knn', tuneGrid = searchGrid,trControl = Bankcontrol)
+
+knn.model
+
+
+
+#Question3
+
+
+predictions <- predict(knn.model,validation.df)
+
+confusionMatrix(predictions,validation.df$Personal.Loan)
+
+
+#Question4
+
+To_Predict_Normalization = data.frame(Age = 40, Experience = 10, Income = 84, Family = 2,
+                                      CCAvg = 2, Education = 1, Mortgage = 0,
+                                      Securities.Account =0, CD.Account = 0, Online = 1,
+                                      CreditCard = 1)
+To_Predict_Normalization = predict(Normalized_model, To_Predict)
+predict(knn.model, To_Predict_Normalization)
+
+
+
+#Question5
+
+train_size = 0.5
+Train_index = createDataPartition(UniversalBankData$Personal.Loan, p = 0.5, list = FALSE)
+train.df = Bank_normalized[Train_index,]
+
+
+test_size = 0.2
+Test_index = createDataPartition(UniversalBankData$Personal.Loan, p = 0.2, list = FALSE)
+Test.df = Bank_normalized[Test_index,]
+
+
+valid_size = 0.3
+Validation_index = createDataPartition(UniversalBankData$Personal.Loan, p = 0.3, list = FALSE)
+validation.df = Bank_normalized[Validation_index,]
+
+
+
+Testknn <- knn(train = train.df[,-8], test = Test.df[,-8], cl = train.df[,8], k =3)
+Validationknn <- knn(train = train.df[,-8], test = validation.df[,-8], cl = train.df[,8], k =3)
+Trainknn <- knn(train = train.df[,-8], test = train.df[,-8], cl = train.df[,8], k =3)
+
+confusionMatrix(Testknn, Test.df[,8])
+confusionMatrix(Trainknn, train.df[,8])
+confusionMatrix(Validationknn, validation.df[,8])
+
+#From the above data it can be determined that Training accuracy is slightly higher than the test and validation sets whihch means the alogorithm is working as it is meant to
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
